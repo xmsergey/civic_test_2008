@@ -106,8 +106,27 @@
 				{"number":"100","chapter":"INTEGRATED CIVICS","sub_chapter":"C: Holidays","question":"100. Name two national U.S. holidays.","answers":["New Year's Day","Martin Luther King, Jr. Day","Presidents' Day","Memorial Day","Independence Day","Labor Day","Columbus Day","Veterans Day","Thanksgiving","Christmas"]}
 			]
 
-			function generate(hideQuestion, hideAnswer){
-				let question = questions[Math.floor(Math.random() * questions.length)];
+			function start(){
+				let col = i => `<div class="col" data="${i}"><a href="javascript:void(0);" onClick="readQuestion(${i});"><h2>${i}</h2></a></div>`;
+				let cols = Array(questions.length).fill(1).map((n, i) => n + i).map((x) => col(x));
+				let row = i => "<div class='row'>" + cols.slice(i, i + 10).join("") + "</div>";
+				let rows = Array(Math.ceil(cols.length / 10)).fill(1).map((n, i) => i * 10).map((x) => row(x));
+
+				document.getElementById('questions_list').innerHTML = rows.join("");
+
+				generate(false, true);
+			}
+
+			function generate(hideQuestion, hideAnswer, item = 0){
+				if (item == 0) {
+					const elements = document.querySelectorAll('#questions_list div.col:not(.completed)');
+					if (elements.length == 0) return;
+					item = parseInt(elements[Math.floor(Math.random() * elements.length)].getAttribute('data'));
+				}
+
+				const element = document.querySelector(`#questions_list div.col[data='${item}']`);
+				element.classList.add("completed");
+				const question = questions[item-1];
 
 				showQA();
 				if (hideQuestion) document.getElementById("question").setAttribute("hidden", "hidden"); 
@@ -123,16 +142,29 @@
 				document.getElementById('answer').removeAttribute('hidden');
 			}
 
-			function readQuestion(){
-				let question = generate(true, true);
+			function readQuestion(item = 0){
+				let question = generate(true, true, item);
 
 				new Audio(`https://www.uscis.gov/sites/default/files/document/audio/Practice_Quiz_Question_${question['number']}.mp3`).play().catch(error => {
     				new Audio(`https://www.uscis.gov/sites/default/files/document/audio/Practice_Quiz_Question_${question['number']}_0.mp3`).play();
   				});
 			}
+
+			function clearAnswered(){
+				document.querySelectorAll('#questions_list div.col').forEach(el => {
+					el.classList.remove('completed');
+				});
+			}
 		</script>
+		<style>
+			.completed {opacity: 0.15;}
+			a {
+				color: black;
+				text-decoration: none;
+			}
+		</style>	
 	</head>
-	<body onload="generate(false, true);">
+	<body onload="start();">
 		<div class="col-lg-8 mx-auto p-4 py-md-5">
 		  	<header class="d-flex align-items-center pb-3 mb-5 border-bottom">
 				<span class="fs-4">2008 Civics Practice Test</span>
@@ -145,11 +177,17 @@
 				<div id="answer">
 				</div>
 
-				<hr>
+				<hr class="mt-5">
 
 				<button class="btn btn-primary" href="javascript:void(0);" onclick="generate(false, true);"> Next Question</button>
 				<button class="btn btn-primary" href="javascript:void(0);" onclick="readQuestion();">Read Next Question</button>
 				<button class="btn btn-secondary" href="javascript:void(0);" onclick="showQA();">Show Question/Answers</button>
+				<button class="btn btn-success" href="javascript:void(0);" onclick="clearAnswered();">Clear</button>
+
+				<hr>
+
+				<h4>Questions map</h4>
+				<div class="col-lg-8 mt-5" id="questions_list"></div>
 		  	</main>
 		</div>	
 
