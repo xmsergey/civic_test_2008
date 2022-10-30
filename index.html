@@ -145,6 +145,8 @@
 			function readQuestion(item = 0){
 				let question = generate(true, true, item);
 				
+				if (typeof question === 'undefined') return;
+				
 				let urls = [`https://www.uscis.gov/sites/default/files/document/audio/Practice_Quiz_Question_${question['number']}.mp3`, `https://www.uscis.gov/sites/default/files/document/audio/Practice_Quiz_Question_${question['number']}_0.mp3`]
 				if (question['number'] == 2 || question['number'] == 15) urls = urls.reverse();
 				
@@ -157,6 +159,29 @@
 				document.querySelectorAll('#questions_list div.col').forEach(el => {
 					el.classList.remove('completed');
 				});
+			}
+
+			function startWithTimeout(){
+				const pauseText = 'Pause ⏸';
+				const playText = 'Start with timeout ⏵';
+				const button = document.getElementById('duration_button');
+				
+				if (button.textContent === playText) {
+					button.textContent = pauseText;
+					runWithTimer();
+				}
+				else
+					button.textContent = playText;
+			}
+
+			function runWithTimer(){
+				const button = document.getElementById('duration_button');
+				const pauseText = 'Pause ⏸';
+
+				if (button.textContent === pauseText) {
+					readQuestion();
+					setTimeout(runWithTimer, parseInt(document.getElementById('duration').value) * 1000);
+				}				
 			}
 		</script>
 		<style>
@@ -182,10 +207,21 @@
 
 				<hr class="mt-5">
 
-				<button class="btn btn-primary" href="javascript:void(0);" onclick="generate(false, true);"> Next Question</button>
-				<button class="btn btn-primary" href="javascript:void(0);" onclick="readQuestion();">Read Next Question</button>
-				<button class="btn btn-secondary" href="javascript:void(0);" onclick="showQA();">Show Question/Answers</button>
-				<button class="btn btn-success" href="javascript:void(0);" onclick="clearAnswered();">Clear</button>
+				<div>
+					<button class="btn btn-primary" href="javascript:void(0);" onclick="generate(false, true);"> Next Question</button>
+					<button class="btn btn-primary" href="javascript:void(0);" onclick="readQuestion();">Read Next Question</button>
+					<button class="btn btn-secondary" href="javascript:void(0);" onclick="showQA();">Show Question/Answers</button>
+					<button class="btn btn-success" href="javascript:void(0);" onclick="clearAnswered();">Clear</button>
+				</div>
+
+				<div class="row mt-3">
+					<div class="col-1">
+						 <input class="form-control" id="duration" type="number" value="10">
+					</div>
+					<div class="col">
+						 <button class="btn btn-success" id="duration_button" href="javascript:void(0);" onclick="startWithTimeout();">Start with timeout ⏵</button>
+					</div>
+				</div>
 
 				<hr>
 
